@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>কর্মী উপস্থিতি রেকর্ড সিস্টেম</title>
+    <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'SolaimanLipi', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1e5799 0%, #207cca 51%, #2989d8 100%);
+            color: #333;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+        
+        header {
+            background: #2c3e50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .description {
+            font-size: 16px;
+            opacity: 0.9;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .content {
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+        
+        .input-section, .preview-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        h2 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #eaeaea;
+        }
+        
+        .employee-form {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr auto;
+            gap: 10px;
+            margin-bottom: 15px;
+            align-items: end;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        label {
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        input, select {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        
+        .btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: background 0.3s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            height: 40px;
+        }
+        
+        .btn:hover {
+            background: #2980b9;
+        }
+        
+        .btn-success {
+            background: #27ae60;
+        }
+        
+        .btn-success:hover {
+            background: #219653;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        
+        th {
+            background-color: #2c3e50;
+            color: white;
+            font-weight: bold;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        
+        .instructions {
+            background: #e8f4fc;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+        
+        .instructions h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .instructions ul {
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 15px;
+            background: #f8f9fa;
+            color: #6c757d;
+            font-size: 14px;
+            border-top: 1px solid #eaeaea;
+        }
+        
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .summary-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        
+        .summary-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 5px 0;
+        }
+        
+        .summary-label {
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+        
+        .status-message {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .status-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        
+        @media (max-width: 768px) {
+            .content {
+                padding: 15px;
+            }
+            
+            .employee-form {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>কর্মী উপস্থিতি রেকর্ড সিস্টেম</h1>
+            <p class="description">কর্মীদের দৈনিক ইন-টাইম ও আউট-টাইম রেকর্ড করুন - ডেটা অটোমেটিকভাবে এক্সেলে সেভ হবে</p>
+        </header>
+        
+        <div class="content">
+            <section class="input-section">
+                <h2>কর্মী উপস্থিতি তথ্য যোগ করুন</h2>
+                
+                <div class="employee-form">
+                    <div class="form-group">
+                        <label for="empName">কর্মীর নাম</label>
+                        <input type="text" id="empName" placeholder="কর্মীর পুরো নাম লিখুন">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="date">তারিখ</label>
+                        <input type="date" id="date" value="">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="inTime">ইন-টাইম</label>
+                        <input type="time" id="inTime" value="09:00">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="outTime">আউট-টাইম</label>
+                        <input type="time" id="outTime" value="17:00">
+                    </div>
+                    
+                    <button class="btn btn-success" id="addEmployee">সাবমিট করুন</button>
+                </div>
+                
+                <div class="summary">
+                    <div class="summary-card">
+                        <div class="summary-label">আজকের সাবমিট</div>
+                        <div class="summary-value" id="todaySubmissions">0</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-label">মোট রেকর্ড</div>
+                        <div class="summary-value" id="totalRecords">0</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-label">পরবর্তী এক্সেল সেভ</div>
+                        <div class="summary-value" id="nextSave">24 দিন</div>
+                    </div>
+                </div>
+                
+                <div id="statusMessage"></div>
+            </section>
+            
+            <section class="preview-section">
+                <h2>আজকের উপস্থিতি রেকর্ড</h2>
+                <div id="previewArea">
+                    <p>আজকের জন্য কোনো কর্মীর তথ্য যোগ করা হয়নি।</p>
+                </div>
+            </section>
+            
+            <div class="instructions">
+                <h3>ব্যবহার নির্দেশিকা:</h3>
+                <ul>
+                    <li>কর্মীর নাম, তারিখ, ইন-টাইম এবং আউট-টাইম দিন</li>
+                    <li>"সাবমিট করুন" বাটনে ক্লিক করে কর্মীর তথ্য সাবমিট করুন</li>
+                    <li>ডেটা অটোমেটিকভাবে লোকাল স্টোরেজে সেভ হবে</li>
+                    <li>প্রতি ২৪ দিন পর অটোমেটিকভাবে এক্সেল ফাইল ডাউনলোড হবে</li>
+                    <li>ব্রাউজার বন্ধ করলেও ডেটা সংরক্ষিত থাকবে</li>
+                    <li>শুধু আজকের তারিখের ডেটা প্রিভিউতে দেখানো হবে</li>
+                </ul>
+            </div>
+        </div>
+        
+        <footer>
+            <p>এই সিস্টেমটি HTML, JavaScript এবং SheetJS লাইব্রেরি ব্যবহার করে তৈরি করা হয়েছে</p>
+            <p>সিস্টেমটি ডেস্কটপ অ্যাপ হিসেবে ইনস্টল করার জন্য "ইনস্টল করুন" বাটনে ক্লিক করুন</p>
+            <button class="btn btn-success" id="installBtn" style="margin-top: 10px;">ইনস্টল করুন</button>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const empNameInput = document.getElementById('empName');
+            const dateInput = document.getElementById('date');
+            const inTimeInput = document.getElementById('inTime');
+            const outTimeInput = document.getElementById('outTime');
+            const addEmployeeBtn = document.getElementById('addEmployee');
+            const previewArea = document.getElementById('previewArea');
+            const todaySubmissionsEl = document.getElementById('todaySubmissions');
+            const totalRecordsEl = document.getElementById('totalRecords');
+            const nextSaveEl = document.getElementById('nextSave');
+            const statusMessage = document.getElementById('statusMessage');
+            const installBtn = document.getElementById('installBtn');
+            
+            // আজকের তারিখ সেট করুন
+            const today = new Date();
+            dateInput.value = today.toISOString().split('T')[0];
+            
+            // লোকাল স্টোরেজ থেকে ডেটা লোড করুন
+            let allEmployees = JSON.parse(localStorage.getItem('employeeAttendance')) || [];
+            
+            // প্রাথমিক আপডেট
+            updatePreview();
+            updateSummary();
+            updateNextSave();
+            
+            // কর্মী যোগ করার ফাংশন
+            addEmployeeBtn.addEventListener('click', function() {
+                const name = empNameInput.value.trim();
+                const date = dateInput.value;
+                const inTime = inTimeInput.value;
+                const outTime = outTimeInput.value;
+                
+                if (!name) {
+                    showStatus('দয়া করে কর্মীর নাম লিখুন', 'error');
+                    return;
+                }
+                
+                if (!date) {
+                    showStatus('দয়া করে তারিখ নির্বাচন করুন', 'error');
+                    return;
+                }
+                
+                if (!inTime || !outTime) {
+                    showStatus('দয়া করে ইন-টাইম এবং আউট-টাইম নির্বাচন করুন', 'error');
+                    return;
+                }
+                
+                // কর্মী অবজেক্ট তৈরি করুন
+                const employee = {
+                    id: Date.now(), // ইউনিক আইডি
+                    name: name,
+                    date: date,
+                    inTime: inTime,
+                    outTime: outTime,
+                    workHours: calculateWorkHours(inTime, outTime),
+                    timestamp: new Date().toISOString()
+                };
+                
+                // সব ডেটাতে যোগ করুন
+                allEmployees.push(employee);
+                
+                // লোকাল স্টোরেজে সেভ করুন
+                localStorage.setItem('employeeAttendance', JSON.stringify(allEmployees));
+                
+                // স্ট্যাটাস মেসেজ দেখান
+                showStatus(`"${name}" এর তথ্য সফলভাবে সাবমিট হয়েছে!`, 'success');
+                
+                // আপডেট করুন
+                updatePreview();
+                updateSummary();
+                
+                // ২৪ দিন পর এক্সেল সেভ চেক করুন
+                checkAndGenerateExcel();
+                
+                // ইনপুট ফিল্ড রিসেট করুন (নাম ছাড়া)
+                empNameInput.value = '';
+                empNameInput.focus();
+            });
+            
+            // কাজের সময় ক্যালকুলেট করার ফাংশন
+            function calculateWorkHours(inTime, outTime) {
+                const inParts = inTime.split(':');
+                const outParts = outTime.split(':');
+                
+                const inHours = parseInt(inParts[0]);
+                const inMinutes = parseInt(inParts[1]);
+                const outHours = parseInt(outParts[0]);
+                const outMinutes = parseInt(outParts[1]);
+                
+                let totalMinutes = (outHours * 60 + outMinutes) - (inHours * 60 + inMinutes);
+                
+                // যদি আউট-টাইম ইন-টাইমের আগে হয় (রাতের শিফটের জন্য)
+                if (totalMinutes < 0) {
+                    totalMinutes += 24 * 60;
+                }
+                
+                const hours = Math.floor(totalMinutes / 60);
+                const minutes = totalMinutes % 60;
+                
+                return `${hours} ঘণ্টা ${minutes} মিনিট`;
+            }
+            
+            // প্রিভিউ আপডেট করার ফাংশন
+            function updatePreview() {
+                // শুধু আজকের তারিখের ডেটা দেখান
+                const todayStr = today.toISOString().split('T')[0];
+                const todayEmployees = allEmployees.filter(emp => emp.date === todayStr);
+                
+                if (todayEmployees.length === 0) {
+                    previewArea.innerHTML = '<p>আজকের জন্য কোনো কর্মীর তথ্য যোগ করা হয়নি।</p>';
+                    return;
+                }
+                
+                let html = `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ক্রমিক নং</th>
+                                <th>কর্মীর নাম</th>
+                                <th>ইন-টাইম</th>
+                                <th>আউট-টাইম</th>
+                                <th>কাজের সময়</th>
+                                <th>সাবমিট সময়</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+                
+                todayEmployees.forEach((employee, index) => {
+                    const submitTime = new Date(employee.timestamp).toLocaleTimeString('bn-BD');
+                    html += `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td>${employee.name}</td>
+                            <td>${employee.inTime}</td>
+                            <td>${employee.outTime}</td>
+                            <td>${employee.workHours}</td>
+                            <td>${submitTime}</td>
+                        </tr>
+                    `;
+                });
+                
+                html += '</tbody></table>';
+                previewArea.innerHTML = html;
+            }
+            
+            // সামারি আপডেট করার ফাংশন
+            function updateSummary() {
+                // আজকের সাবমিট সংখ্যা
+                const todayStr = today.toISOString().split('T')[0];
+                const todayCount = allEmployees.filter(emp => emp.date === todayStr).length;
+                todaySubmissionsEl.textContent = todayCount;
+                
+                // মোট রেকর্ড সংখ্যা
+                totalRecordsEl.textContent = allEmployees.length;
+            }
+            
+            // পরবর্তী এক্সেল সেভ আপডেট করার ফাংশন
+            function updateNextSave() {
+                const lastExcelDate = localStorage.getItem('lastExcelGeneration');
+                
+                if (!lastExcelDate) {
+                    nextSaveEl.textContent = '24 দিন';
+                    return;
+                }
+                
+                const lastDate = new Date(lastExcelDate);
+                const nextDate = new Date(lastDate);
+                nextDate.setDate(nextDate.getDate() + 24);
+                
+                const today = new Date();
+                const daysLeft = Math.ceil((nextDate - today) / (1000 * 60 * 60 * 24));
+                
+                if (daysLeft <= 0) {
+                    nextSaveEl.textContent = 'শীঘ্রই';
+                } else {
+                    nextSaveEl.textContent = `${daysLeft} দিন`;
+                }
+            }
+            
+            // ২৪ দিন পর এক্সেল জেনারেট চেক করার ফাংশন
+            function checkAndGenerateExcel() {
+                const lastExcelDate = localStorage.getItem('lastExcelGeneration');
+                const today = new Date();
+                
+                if (!lastExcelDate) {
+                    // প্রথমবার ব্যবহার
+                    localStorage.setItem('lastExcelGeneration', today.toISOString());
+                    return;
+                }
+                
+                const lastDate = new Date(lastExcelDate);
+                const daysPassed = Math.floor((today - lastDate) / (1000 * 60 * 60 * 24));
+                
+                if (daysPassed >= 24) {
+                    generateExcelFile();
+                    localStorage.setItem('lastExcelGeneration', today.toISOString());
+                    updateNextSave();
+                    showStatus('২৪ দিন পর এক্সেল রিপোর্ট অটোমেটিকভাবে তৈরি হয়েছে!', 'info');
+                }
+            }
+            
+            // Excel ফাইল তৈরি করার ফাংশন
+            function generateExcelFile() {
+                if (allEmployees.length === 0) {
+                    return;
+                }
+                
+                // ওয়ার্কবুক তৈরি করুন
+                const workbook = XLSX.utils.book_new();
+                
+                // ডেটা প্রস্তুত করুন
+                const data = [
+                    ['ক্রমিক নং', 'কর্মীর নাম', 'তারিখ', 'ইন-টাইম', 'আউট-টাইম', 'কাজের সময়', 'সাবমিট তারিখ']
+                ];
+                
+                allEmployees.forEach((employee, index) => {
+                    const submitDate = new Date(employee.timestamp).toLocaleDateString('bn-BD');
+                    data.push([
+                        index + 1,
+                        employee.name,
+                        employee.date,
+                        employee.inTime,
+                        employee.outTime,
+                        employee.workHours,
+                        submitDate
+                    ]);
+                });
+                
+                // ওয়ার্কশিট তৈরি করুন
+                const worksheet = XLSX.utils.aoa_to_sheet(data);
+                
+                // ওয়ার্কশিটে কলামের প্রস্থ সেট করুন
+                const colWidths = [
+                    { wch: 10 },  // ক্রমিক নং
+                    { wch: 25 },  // নাম
+                    { wch: 12 },  // তারিখ
+                    { wch: 10 },  // ইন-টাইম
+                    { wch: 10 },  // আউট-টাইম
+                    { wch: 15 },  // কাজের সময়
+                    { wch: 15 }   // সাবমিট তারিখ
+                ];
+                worksheet['!cols'] = colWidths;
+                
+                // ওয়ার্কবুকে ওয়ার্কশিট যোগ করুন
+                XLSX.utils.book_append_sheet(workbook, worksheet, "কর্মী উপস্থিতি");
+                
+                // ফাইল নাম তৈরি করুন
+                const startDate = new Date();
+                startDate.setDate(startDate.getDate() - 24);
+                const endDate = new Date();
+                
+                const startStr = startDate.toISOString().split('T')[0];
+                const endStr = endDate.toISOString().split('T')[0];
+                const fileName = `কর্মী_উপস্থিতি_${startStr}_থেকে_${endStr}.xlsx`;
+                
+                // ফাইল ডাউনলোড করুন
+                XLSX.writeFile(workbook, fileName);
+            }
+            
+            // স্ট্যাটাস মেসেজ দেখানোর ফাংশন
+            function showStatus(message, type) {
+                statusMessage.textContent = message;
+                statusMessage.className = 'status-message';
+                
+                if (type === 'success') {
+                    statusMessage.classList.add('status-success');
+                } else if (type === 'error') {
+                    statusMessage.classList.add('status-warning');
+                } else if (type === 'info') {
+                    statusMessage.classList.add('status-info');
+                }
+                
+                // ৫ সেকেন্ড পর মেসেজ অদৃশ্য করুন
+                setTimeout(() => {
+                    statusMessage.textContent = '';
+                    statusMessage.className = 'status-message';
+                }, 5000);
+            }
+            
+            // ইনস্টলেশন বাটন ইভেন্ট
+            installBtn.addEventListener('click', function() {
+                showStatus('ডেস্কটপ অ্যাপ্লিকেশন তৈরি করা হচ্ছে...', 'info');
+                
+                // HTML কন্টেন্ট সংগ্রহ
+                const htmlContent = document.documentElement.outerHTML;
+                
+                // Blob তৈরি করুন
+                const blob = new Blob([htmlContent], { type: 'text/html' });
+                const url = URL.createObjectURL(blob);
+                
+                // ডাউনলোড লিঙ্ক তৈরি করুন
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'Employee_Attendance_System.html';
+                a.click();
+                
+                // রিসোর্স ক্লিনআপ
+                URL.revokeObjectURL(url);
+                
+                showStatus('HTML ফাইল ডাউনলোড হয়েছে। এখন এটি EXE তে রূপান্তর করুন।', 'success');
+                
+                // EXE রূপান্তরের জন্য নির্দেশিকা দেখান
+                setTimeout(() => {
+                    alert(`HTML থেকে EXE তৈরি করার জন্য:\n\n1. "Employee_Attendance_System.html" ফাইলটি ডাউনলোড হয়েছে\n2. https://github.com/nwjs/nw.js ডাউনলোড করুন\n3. NW.js ব্যবহার করে HTML ফাইলটি EXE তে কনভার্ট করুন\n4. অথবা "HTML to EXE Converter" সফটওয়্যার ব্যবহার করুন`);
+                }, 1000);
+            });
+            
+            // প্রাথমিক প্রিভিউ সেট করুন
+            updatePreview();
+        });
+    </script>
+</body>
+</html>
